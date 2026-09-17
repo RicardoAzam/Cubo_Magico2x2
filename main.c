@@ -10,7 +10,6 @@ int main()
     setlocale(LC_ALL, "Portuguese");
     int i, j, k, x, y;
     Fila *faux = CriaFila();
-    Sticker anel[8];
    
     lerCubo();
  
@@ -25,9 +24,10 @@ int main()
  
     imprimirCubo();
 
+    imprimirMapaFaces();
     while(1)
     {
-    printf("Qual dos métodos deseja utilizar para resolver o cubo mágico?\n1- Método 1\n2- Método 2\n3- Método 3\n4-Tentar resolver\n5-Sair\n");
+    printf("Qual dos métodos deseja utilizar para resolver o cubo mágico?\n1- Método 1\n2- Método 2\n3- Método 3\n4-Tentar resolver\n5-Sair\n6- Girar uma face manualmente\n");
     scanf("%d", &x);
         switch (x)
         {
@@ -41,11 +41,21 @@ int main()
                 //metodo3(faux);
             break;
             case 4:
-                resolverCubo(faux, anel);
+                //resolverCubo(faux);
                 break;
             case 5:
                 exit(0);
                 break;
+            case 6:
+            {
+                int faceEscolhida, sentidoHorario;
+                escolherMovimento(&faceEscolhida, &sentidoHorario);
+                if (faceEscolhida != -1) {
+                    girarFace(faceEscolhida, sentidoHorario);
+                    imprimirCubo();
+                }
+                break;
+            }
             default:
                 printf("Opção inválida!\n");
                 break;

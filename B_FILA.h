@@ -114,6 +114,132 @@ void atualizaCubo(Fila* f, Sticker anel[8]) {
     }
 }
 
+// ============================================================
+// Tabela de aneis por face: cada movimento afeta 3 grupos de 4
+// stickers (a propria face + dois "sub-aneis" das faces vizinhas).
+// Cada grupo gira de forma independente com o mesmo mecanismo
+// (1x rotacionaFila = horario, 3x = anti-horario).
+// ============================================================
+
+typedef struct {
+    Sticker propria[4];
+    Sticker banda1[4];
+    Sticker banda2[4];
+} AneisFace;
+
+AneisFace aneisPorFace[NUM_FACES] = {
+    [U] = {
+        .propria = { {U,1}, {U,3}, {U,2}, {U,0} },
+        .banda1  = { {F,0}, {L,0}, {B,0}, {R,0} },
+        .banda2  = { {F,1}, {L,1}, {B,1}, {R,1} }
+    },
+    [D] = {
+        .propria = { {D,0}, {D,2}, {D,3}, {D,1} },
+        .banda1  = { {L,3}, {B,3}, {R,3}, {F,3} },
+        .banda2  = { {L,2}, {B,2}, {R,2}, {F,2} }
+    },
+    [F] = {
+        .propria = { {F,1}, {F,3}, {F,2}, {F,0} },
+        .banda1  = { {U,2}, {R,0}, {D,1}, {L,3} },
+        .banda2  = { {U,3}, {R,2}, {D,0}, {L,1} }
+    },
+    [B] = {
+        .propria = { {B,0}, {B,2}, {B,3}, {B,1} },
+        .banda1  = { {U,0}, {R,1}, {D,3}, {L,2} },
+        .banda2  = { {U,1}, {R,3}, {D,2}, {L,0} }
+    },
+    [L] = {
+        .propria = { {L,0}, {L,2}, {L,3}, {L,1} },
+        .banda1  = { {U,0}, {B,3}, {D,0}, {F,0} },
+        .banda2  = { {U,2}, {B,1}, {D,2}, {F,2} }
+    },
+    [R] = {
+        .propria = { {R,0}, {R,1}, {R,3}, {R,2} },
+        .banda1  = { {U,3}, {B,0}, {D,3}, {F,2} },
+        .banda2  = { {U,1}, {B,2}, {D,1}, {F,1} }
+    }
+};
+
+// Versoes de montaAnel/atualizaCubo para grupos de 4 (em vez de 8)
+void montaAnel4(Fila *f, Sticker anel[4]) {
+    for (int i = 0; i < 4; i++)
+        InsereFila(f, cube[anel[i].face][anel[i].pos]);
+}
+
+void atualizaCubo4(Fila *f, Sticker anel[4]) {
+    Nos *atual = f->ini;
+    int i = 0;
+    while (atual != NULL && i < 4) {
+        cube[anel[i].face][anel[i].pos] = atual->info;
+        atual = atual->prox;
+        i++;
+    }
+}
+
+// Libera todos os nos de uma fila (a fila e so uma ferramenta temporaria)
+void destroiFila(Fila *f) {
+    Nos *atual = f->ini;
+    while (atual != NULL) {
+        Nos *prox = atual->prox;
+        free(atual);
+        atual = prox;
+    }
+    free(f);
+}
+
+// Gira um unico grupo de 4 stickers "vezes" vezes (1=horario, 3=anti-horario)
+void giraAnel(Sticker anel[4], int vezes) {
+    Fila *f = CriaFila();
+    montaAnel4(f, anel);
+
+    for (int i = 0; i < vezes; i++)
+        rotacionaFila(f);
+
+    atualizaCubo4(f, anel);
+    destroiFila(f);
+}
+
+// Gira uma face inteira: os 3 grupos (propria + 2 bandas) juntos
+void girarFace(int face, int sentidoHorario) {
+    int vezes = sentidoHorario ? 1 : 3;
+
+    giraAnel(aneisPorFace[face].propria, vezes);
+    giraAnel(aneisPorFace[face].banda1, vezes);
+    giraAnel(aneisPorFace[face].banda2, vezes);
+}
+
+// Le do usuario qual face girar e em qual sentido.
+// faceEscolhida recebe -1 se a entrada for invalida.
+void escolherMovimento(int *faceEscolhida, int *sentidoHorario) {
+    char letra;
+    char extra;
+
+    printf("Digite a face (U, D, F, B, L, R): ");
+    scanf(" %c", &letra);
+
+    switch (letra) {
+        case 'U': case 'u': *faceEscolhida = U; break;
+        case 'D': case 'd': *faceEscolhida = D; break;
+        case 'F': case 'f': *faceEscolhida = F; break;
+        case 'B': case 'b': *faceEscolhida = B; break;
+        case 'L': case 'l': *faceEscolhida = L; break;
+        case 'R': case 'r': *faceEscolhida = R; break;
+        default:
+            printf("Face invalida!\n");
+            *faceEscolhida = -1;
+            return;
+    }
+
+    printf("Digite 'b' para anti-horario, ou 'a' para horario: ");
+    extra = getchar(); // pega o que sobrou do buffer (o \n do scanf anterior)
+    if (extra != 'a') {
+        *sentidoHorario = (extra == 'b') ? 0 : 1;
+        while (getchar() != '\n'); // limpa o resto da linha
+    } else {
+        *sentidoHorario = 1; // sem apostrofo = horario
+    }
+}
+
 void imprimeFila(Fila* f)
 {
     Nos* q;
@@ -142,11 +268,12 @@ void imprimeFila(Fila* f)
 // Protótipo: a definição completa só vem mais abaixo no arquivo,
 // mas resolverCubo() precisa chamá-la antes disso.
 void imprimirCubo(void);
+void imprimirMapaFaces(void);
 
 void resolverCubo(Fila* f, Sticker anel[8])
 {
     Nos* atual = f->ini;
-    int x=1; 
+    int x; 
     montaAnel(f, anel);
     while(x==1)
     {
@@ -285,6 +412,26 @@ void imprimirCubo(void) {
     printGap(2);
     printSquare(cube[D][2]); printSquare(cube[D][3]);
     printf("\n\n");
+}
+
+// Imprime o mesmo layout planificado, mas com as letras das faces
+// em vez das cores, para o usuario se orientar antes de girar.
+void imprimirMapaFaces(void) {
+    printf("\n=== Mapa de Faces (orientacao fixa) ===\n");
+    printf("Segure o cubo com a face BRANCA virada para voce (F) e a face AMARELA em cima (U).\n\n");
+
+    printf("        U U\n");
+    printf("        U U\n");
+    printf("L L | F F | R R | B B\n");
+    printf("L L | F F | R R | B B\n");
+    printf("        D D\n");
+    printf("        D D\n\n");
+
+    printf("Legenda:\n");
+    for (int face = 0; face < NUM_FACES; face++) {
+        printf("  %s\n", nomesFaces[face]);
+    }
+    printf("\n");
 }
  
 #endif // B_FILA_H
