@@ -1,63 +1,137 @@
+// main.c
 #include <stdio.h>
 #include <stdlib.h>
-#include "B_FILA.h"
-#include <time.h>
-#include <string.h>
 #include <locale.h>
 
-int main()
-{
-    setlocale(LC_ALL, "Portuguese");
-    int i, j, k, x, y;
-    Fila *faux = CriaFila();
-   
-    lerCubo();
- 
-    if (!validarCubo()) {
-        printf("\nAtencao: o cubo digitado nao tem 4 blocos de cada cor.\n");
-        printf("A impressao sera feita mesmo assim, apenas como demonstracao.\n");
-        imprimirCubo();
-        printf("\n");
-        printf("Para resolver o cubo, digite um cubo valido:\n\n");
-        lerCubo();
-    }
- 
-    imprimirCubo();
+#include "B_FILA.h"
 
-    imprimirMapaFaces();
-    while(1)
+int main(void)
+{
+    int opcao;
+
+    setlocale(LC_ALL, "Portuguese");
+
+    while (1)
     {
-    printf("Qual dos métodos deseja utilizar para resolver o cubo mágico?\n1- Método 1\n2- Método 2\n3- Método 3\n4-Tentar resolver\n5-Sair\n6- Girar uma face manualmente\n");
-    scanf("%d", &x);
-        switch (x)
+        printf("\n====================================\n");
+        printf("          CUBO MAGICO 2x2\n");
+        printf("====================================\n");
+        printf("1 - Visualizar metodo de resolucao\n");
+        printf("2 - Tentar resolver o cubo\n");
+        printf("3 - Mover manualmente\n");
+        printf("4 - Sair\n");
+        printf("Escolha uma opcao: ");
+
+        if (scanf("%d", &opcao) != 1)
+        {
+            while (getchar() != '\n');
+
+            printf("\nOpcao invalida!\n");
+            continue;
+        }
+
+        switch (opcao)
         {
             case 1:
-                //metodo1(faux);
+                printf("\nMetodo de resolucao ainda nao implementado.\n");
                 break;
+
             case 2:
-                //metodo2(faux);
-                break;
             case 3:
-                //metodo3(faux);
-            break;
-            case 4:
-                //resolverCubo(faux);
-                break;
-            case 5:
-                exit(0);
-                break;
-            case 6:
             {
-                int faceEscolhida, sentidoHorario;
-                escolherMovimento(&faceEscolhida, &sentidoHorario);
-                if (faceEscolhida != -1) {
-                    girarFace(faceEscolhida, sentidoHorario);
-                    imprimirCubo();
+                int faceEscolhida;
+                int setor;
+                int sentidoHorario;
+                int sentidoVertical;
+
+                lerCubo();
+
+                /*
+                 * Solicita novamente o cubo enquanto ele
+                 * nao possuir quatro stickers de cada cor.
+                 */
+                while (!validarCubo())
+                {
+                    printf("\nAtencao: o cubo digitado e invalido.\n");
+                    printf("Cada cor deve aparecer exatamente 4 vezes.\n");
+                    printf("Digite o cubo novamente.\n\n");
+
+                    lerCubo();
                 }
+
+                imprimirCubo();
+                imprimirMapaFaces();
+
+                while (1)
+                {
+                    escolherMovimento(
+                        &faceEscolhida,
+                        &setor,
+                        &sentidoHorario,
+                        &sentidoVertical
+                    );
+
+                    /*
+                     * Quando a entrada for invalida,
+                     * permite tentar novamente ou sair.
+                     */
+                    if (faceEscolhida == -1)
+                    {
+                        printf("\n1 - Tentar novamente\n");
+                        printf("2 - Sair\n");
+                        printf("Escolha: ");
+
+                        if (scanf("%d", &opcao) != 1)
+                        {
+                            while (getchar() != '\n');
+                            opcao = 1;
+                        }
+
+                        if (opcao == 2)
+                            break;
+
+                        continue;
+                    }
+
+                    /*
+                     * Executa o movimento escolhido.
+                     */
+                    girarFaceSetor(
+                        faceEscolhida,
+                        setor,
+                        sentidoHorario,
+                        sentidoVertical
+                    );
+
+                    printf("\nCubo atualizado:\n");
+                    imprimirCubo();
+
+                    printf("\nMapa de faces:\n");
+                    imprimirMapaFaces();
+
+                    printf("1 - Continuar movimentando\n");
+                    printf("2 - Sair\n");
+                    printf("Escolha: ");
+
+                    if (scanf("%d", &opcao) != 1)
+                    {
+                        while (getchar() != '\n');
+                        opcao = 1;
+                    }
+
+                    if (opcao == 2)
+                        break;
+                }
+
                 break;
             }
+
+            case 4:
+                printf("\nSaindo...\n");
+                return 0;
+
             default:
-                printf("Opção inválida!\n");
+                printf("\nOpcao invalida!\n");
                 break;
         }
     }
