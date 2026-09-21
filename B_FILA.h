@@ -676,37 +676,37 @@ void imprimirCubo(void)
 {
     printf("\n=== Cubo Atual (planificado) ===\n\n");
 
-    printGap(2);
+    printGap(3);
     printSquare(cube[U][0]); printSquare(cube[U][1]);
     printf("\n");
 
-    printGap(2);
+    printGap(3);
     printSquare(cube[U][2]); printSquare(cube[U][3]);
     printf("\n");
 
     printSquare(cube[L][0]); printSquare(cube[L][1]);
-    printf("| ");
+    printf("  ");
     printSquare(cube[F][0]); printSquare(cube[F][1]);
-    printf("| ");
+    printf("  ");
     printSquare(cube[R][0]); printSquare(cube[R][1]);
-    printf("| ");
+    printf("  ");
     printSquare(cube[B][0]); printSquare(cube[B][1]);
     printf("\n");
 
     printSquare(cube[L][2]); printSquare(cube[L][3]);
-    printf("| ");
+    printf("  ");
     printSquare(cube[F][2]); printSquare(cube[F][3]);
-    printf("| ");
+    printf("  ");
     printSquare(cube[R][2]); printSquare(cube[R][3]);
-    printf("| ");
+    printf("  ");
     printSquare(cube[B][2]); printSquare(cube[B][3]);
     printf("\n");
 
-    printGap(2);
+    printGap(3);
     printSquare(cube[D][0]); printSquare(cube[D][1]);
     printf("\n");
 
-    printGap(2);
+    printGap(3);
     printSquare(cube[D][2]); printSquare(cube[D][3]);
     printf("\n\n");
 }
@@ -717,12 +717,12 @@ void imprimirMapaFaces(void)
     printf("U = face de cima, D = face de baixo, F = face da frente,\n");
     printf("B = face de tras, L = face da esquerda, R = face da direita.\n\n");
 
-    printf("        U U\n");
-    printf("        U U\n");
-    printf("L L | F F | R R | B B\n");
-    printf("L L | F F | R R | B B\n");
-    printf("        D D\n");
-    printf("        D D\n\n");
+    printf("            U U\n");
+    printf("            U U\n");
+    printf("L L  F F  R R  B B\n");
+    printf("L L  F F  R R  B B\n");
+    printf("            D D\n");
+    printf("            D D\n\n");
 
     printf("Legenda:\n");
     for (int face = 0; face < NUM_FACES; face++)
